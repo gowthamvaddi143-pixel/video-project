@@ -9,6 +9,7 @@ export function AdminDashBoard(){
 
      const [videos,setVideos] = useState<VideoContract[]>([])
      const [categories,setCategories] = useState<CategoryContract[]>([])
+     const [video,setVideo] = useState<VideoContract|null>(null)
 
      function LoadCategories(){
         axios.get('http://127.0.0.1:6060/categories')
@@ -21,6 +22,7 @@ export function AdminDashBoard(){
      function LoadVideos(){
        axios.get('http://127.0.0.1:6060/videos')
        .then(response=>{
+        console.log(response.data)
         setVideos(response.data)
        })
      }
@@ -30,22 +32,30 @@ export function AdminDashBoard(){
 
  const addVideoForm = useFormik({
     initialValues:{
-        video_id:0,
-        title:'',
-        description:'',
-        url:'',
-        likes:0,
-        views:0,
-        comments:'',
-        category_id:0,
+        video_id:video ? video.video_id :0,
+        title:video ? video.title :'',
+        description:video? video.description:"",
+        url:video? video.url:'',
+        likes:video?video.likes: 0,
+        views:video?video.views:0,
+        comments:video?video.comments:'',
+        category_id:video?video.category_id:0,
     
     },
-    onSubmit:(video)=>{
-        axios.post('http://127.0.0.1:6060/add-video',video)
+    onSubmit:(values)=>{if(video && video.video_id)
+        
+        axios.put('http://127.0.0.1:6060/edit-video/'+ video.video_id,values)
         .then(()=>{
-            alert('Video Added')
+            alert('Video Updated')
             LoadVideos()
-        })
+        });
+        else{
+            axios.post("http://127.0.0.1:6060/add-video",values)
+            .then(()=>{
+                alert("video added")
+                LoadVideos();
+            })
+        }
 
     },
     enableReinitialize:true
@@ -67,6 +77,9 @@ function hanleDeleteClick(id: number){
     }
 
 }
+     function handleEditClick(video:VideoContract){
+        setVideo(video)
+     }
 
 
      
@@ -86,24 +99,24 @@ function hanleDeleteClick(id: number){
                            <form  onSubmit={addVideoForm.handleSubmit}>
                              <dl>
                                 <dt>Video Id</dt>
-                                <dd><input type="text"  name="video_id" onChange={addVideoForm.handleChange}/></dd>
+                                <dd><input type="text"  name="video_id" onChange={addVideoForm.handleChange} value={addVideoForm.values.video_id}/></dd>
                                 <dt>title</dt>
-                                <dd><input type="text" name="title" onChange={addVideoForm.handleChange} /></dd>
+                                <dd><input type="text" name="title" onChange={addVideoForm.handleChange} value={addVideoForm.values.title} /></dd>
                                 <dt>description</dt>
                                 <dd>
-                                    <textarea rows={4} cols={40} name="description" onChange={addVideoForm.handleChange}></textarea>
+                                    <textarea rows={4} cols={40} name="description" onChange={addVideoForm.handleChange} value={addVideoForm.values.description}></textarea>
                                 </dd>
                                 <dt>URL</dt>
-                                <dd><input type="text"name="url"onChange={addVideoForm.handleChange} /></dd>
+                                <dd><input type="text"name="url"onChange={addVideoForm.handleChange}value={addVideoForm.values.url} /></dd>
                                 <dt>Likes</dt>
-                                <dd><input type="number" name="likes" onChange={addVideoForm.handleChange} /></dd>
+                                <dd><input type="number" name="likes" onChange={addVideoForm.handleChange} value={addVideoForm.values.likes}/></dd>
                                 <dt>comments</dt>
-                                <dd><input type="text" name="comments" onChange={addVideoForm.handleChange}  /></dd>
+                                <dd><input type="text" name="comments" onChange={addVideoForm.handleChange}value={addVideoForm.values.comments}  /></dd>
                                 <dt>Views</dt>
-                                <dd><input type="number" name="views" onChange={addVideoForm.handleChange} /></dd>
+                                <dd><input type="number" name="views" onChange={addVideoForm.handleChange}value={addVideoForm.values.views} /></dd>
                                 <dt>category</dt>
                                 <dd>
-                                    <select onChange={addVideoForm.handleChange} name="category_id">
+                                    <select onChange={addVideoForm.handleChange} name="category_id" value={addVideoForm.values.category_id}>
                                         {categories.map(category=><option key={category.category_id} value={category.category_id}>{category.category_name.toUpperCase()}</option>)}
 
                                     </select>
@@ -137,7 +150,7 @@ function hanleDeleteClick(id: number){
                         <iframe src={video.url} width="200" height="200"></iframe>
 
                         </td>
-                        <td><button className="btn btn-warning bi bi-pen-fill"></button>
+                        <td><button   onClick={()=>handleEditClick(video)}  className="btn btn-warning bi bi-pen-fill" data-bs-toggle="modal" data-bs-target="#new"></button>
                       
                         <button onClick={()=>hanleDeleteClick(video.video_id)} className="btn btn-danger bi bi-trash-fill mx-3"></button> </td>
                         </tr>
