@@ -1,6 +1,99 @@
+/* ========================================
+   APP LAYOUT STYLES
+   ======================================== */
 
-.home-container{
-   background-size: cover;
-   height: 100vh;
-    background-image:url("bannner.jpg") ;
+:root {
+  --header-height: 72px;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  min-height: calc(100vh - 120px);
+}
+
+/* Home page specific styles */
+.home-container {
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4ebf5 100%);
+}
+
+.login-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-tabs .nav-pills .nav-link {
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.login-tabs .nav-pills .nav-link.active {
+  background: var(--primary-color, #0d6efd);
+}
+
+.login-form dl {
+  margin-bottom: 1rem;
+}
+
+.login-form dt {
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: #333;
+}
+
+.login-form .form-control {
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-form .form-control:focus {
+  border-color: var(--primary-color, #0d6efd);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.login-form .btn {
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 0.875rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 575.98px) {
+  :root {
+    --header-height: 64px;
+  }
+
+  .login-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+}
+
+/* Utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, #212529 0%, #0d6efd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

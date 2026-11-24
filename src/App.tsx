@@ -1,88 +1,76 @@
+import { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import Header from './components/Header';
+import './App.css';
 
-import './App.css'
-
-import {useFormik} from 'formik'
-import type { AdiminContract } from './contracts/AdminContracts'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-
-function App() {
-
-  let navigate = useNavigate();
-
-  const adminForm = useFormik({
-    initialValues:{
-      admin_id:'',
-      password:''
-
-    },
-    onSubmit:(admin)=>{
-      axios.get('http://127.0.0.1:6060/admin')
-      .then(response=>{
-        var adminuser = response.data.find((item:AdiminContract)=>item.admin_id===admin.admin_id)
-        if(adminuser){
-          if(adminuser.password===admin.password){
-            navigate('/Admin-dashboard')
-
-          }else{
-            alert('Invalid password');
-          }
-          }else{
-            alert('invalid Admin id')      
-            }
-        
-      })
-
-    }
-
-  })
-
-  return (
-    <div className='home-container  row'>
-      <div className='col-7'>
-
-      </div>
-      <div className='col-5 bg-white w-25 p-4' style={{marginTop:'170px',height:'435px', borderRadius:'25px' }}>
-        <ul className='nav nav-pills '>
-          <li className='nav-item'><a href="#user" data-bs-toggle='tab'  className='nav-link active'>User Login</a></li>
-          <li className='nav-item'><a href="#admin" data-bs-toggle='tab' className='nav-link'>Admin Module Login</a></li>
-
-        </ul>
-        <div className='tab-content mt-3'>
-          <div className='tab-pane active ' id='user'>
-            <form >
-              <dl>
-              <dt> User Id</dt>
-              <dd><input type="text"  className='form-control' /></dd>
-              <dt>Password</dt>
-              <dd><input type="password"className='form-control' /></dd>
-            </dl>
-            <button className='btn btn-primary w-100'>User Login</button>
-
-            </form>
-          </div>
-       
-        <div className='tab-pane' id='admin'>
-            <form onSubmit={adminForm.handleSubmit}>
-              <dl>
-              <dt>Admin Id</dt>
-              <dd><input type="text" name='admin_id' onChange={adminForm.handleChange}  className='form-control' /></dd>
-              <dt>Password</dt>
-              <dd><input type="password"name='password'onChange={adminForm.handleChange} className='form-control' /></dd>
-            </dl>
-            <button type='submit' className='btn btn-warning w-100'>Admin Login</button>
-
-            </form>
-          </div>
-           </div>
-
-      </div>
-
-    </div>
-    
-
-  )
-
+export interface AppContextType {
+  handleLogin: (name: string, userObj?: any) => void;
+  handleLogout: () => void;
+  isLoggedIn: boolean;
+  userName: string;
 }
 
-export default App
+function App() {
+  // Authentication states (can be modified by Header or Login page)
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>('');
+  const navigate = useNavigate();
+
+  // Load user session from localStorage when the app opens
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setIsLoggedIn(true);
+        setUserName(parsed.user_name || parsed.user_id || 'User');
+      } catch {
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  // Handler when user logs in
+  const handleLogin = (name: string, userObj?: any) => {
+    const displayName = name || 'User';
+    setUserName(displayName);
+    setIsLoggedIn(true);
+    if (userObj) {
+      localStorage.setItem('user', JSON.stringify(userObj));
+    }
+  };
+
+  // Handler when user logs out
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUserName('');
+    setIsLoggedIn(false);
+  };
+
+  // Handler for global search submitted in Header
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/videos?search=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  return (
+    <div className="app-layout">
+      {/* 🚀 Interactive Fresher-Level Header Component */}
+      <Header
+        isLoggedIn={isLoggedIn}
+        userName={userName}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+        onSearch={handleSearch}
+      />
+
+      {/* Main page content with outlet context for login/logout actions */}
+      <main className="main-content" role="main">
+        <Outlet context={{ handleLogin, handleLogout, isLoggedIn, userName }} />
+      </main>
+    </div>
+  );
+}
+
+export default App;
